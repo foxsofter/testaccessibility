@@ -16,7 +16,7 @@
     [nativeButton setTitle:@"Push Flutter VC" forState:UIControlStateNormal];
     [nativeButton addTarget:self action:@selector(pushNative) forControlEvents:UIControlEventTouchUpInside];
     
-    self.flutterEngine = [[FlutterEngine alloc] initWithName:@"io.flutter" project:nil];
+    self.flutterEngine = [[FlutterEngine alloc] initWithName:@"io.flutter" project:nil allowHeadlessExecution:YES];
     [self.flutterEngine runWithEntrypoint:nil];
     [self.class registerWithRegistrar:[self.flutterEngine registrarForPlugin:@"testaccessibility"]];
     [GeneratedPluginRegistrant registerWithRegistry:self.flutterEngine];
@@ -50,7 +50,11 @@
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
     if([@"closePage" isEqualToString:call.method]){
         UINavigationController *nav = [UIApplication sharedApplication].keyWindow.rootViewController.navigationController;
-        [nav popViewControllerAnimated:YES];
+        if (nav.viewControllers.count > 1) {
+            FlutterViewController *vc = nav.viewControllers[nav.viewControllers.count - 2];
+            self.flutterEngine.viewController = vc;
+            [nav popViewControllerAnimated:YES];
+        }
     }else if([@"openPage" isEqualToString:call.method]){
 //        FlutterViewController *oldVC = (FlutterViewController *)self.flutterEngine.viewController;
 //        ((void(*)(id, SEL, BOOL))objc_msgSend)(oldVC, NSSelectorFromString(@"surfaceUpdated:"), NO);
